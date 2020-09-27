@@ -1,4 +1,4 @@
-string* get_conditions(int bin_n, double* bins, string quantity = "ProbeMuon_Phi")
+string* get_conditions(int bin_n, double* bins, string quantity)
 {
     string* conditions = new string[bin_n];
     for (int i = 0; i < bin_n; i++)

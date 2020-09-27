@@ -1,4 +1,4 @@
-#include "src/compare_efficiency.cpp"
+#include "src/compare_efficiency.C"
 #include "src/DoFit.cpp"
 #include "src/get_conditions.cpp"
 #include "src/get_efficiency.cpp"
@@ -17,18 +17,18 @@ void Efficiency()
     ----------------------------------------------------------------------------------------*/
     
     /*-----------------------------------INSERT CODE HERE-----------------------------------*/
-    int bin_n = //Insert number of intervals(bins) here
-    double bins[] = {...};
+    int bin_n = 27;//Insert number of intervals(bins) here
+    double bins[] = {2, 3.5, 3.7, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.2, 6.4, 6.6, 6.8, 7.3, 9.0, 13.0, 17.0, 50.0};
     
-    string* conditions = get_conditions(bin_n, bins); // (1)
+    string* conditions = get_conditions(bin_n, bins, "ProbeMuon_Pt"); // (1)
     
     //Now we must choose initial conditions in order to fit our data
     double *init_conditions = new double[4];
     /*-----------------------------------INSERT CODE HERE-----------------------------------*/
-    init_conditions[0] = /*peak1*/;
-    init_conditions[1] = /*peak2*/;
-    init_conditions[2] = /*peak3*/;
-    init_conditions[3] = /*sigma*/;
+    init_conditions[0] = 9.46030;
+    init_conditions[1] = 10.02326;
+    init_conditions[2] = 10.3552;
+    init_conditions[3] = 0.08;
     
     double ** yields_n_errs = new double*[bin_n];
     
@@ -37,7 +37,7 @@ void Efficiency()
         if (DataIsMC)
             yields_n_errs[i] = McYield(conditions[i]);
         else
-            yields_n_errs[i] = doFit(conditions[i], "PassingProbeTrackerMuon", init_conditions);
+            yields_n_errs[i] = doFit(conditions[i], "PassingProbeTrackingMuon", init_conditions, true);
             //doFit returns: [yield_all, yield_pass, err_all, err_pass]
     }
     
@@ -58,6 +58,6 @@ void Efficiency()
     //Once we've calculated the efficiency for both data sets, we can generate
     //a plot that combines both results
     
-    string quantity = "";
-    compare_efficiency(quantity);
+    //string quantity = "";
+    //compare_efficiency(quantity);
 }

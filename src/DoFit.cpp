@@ -15,12 +15,28 @@ char* strcat(string destination, string source)
     return output;
 }
 
+string strcat(string destination, string source, string ok)
+{
+    int size = destination.size() + source.size();
+    char* output = new char[size + 1];
+    for (int i = 0; i < size; i++)
+    {
+        if (i < destination.size())
+            output[i] = destination[i];
+        else
+            output[i] = source[i - destination.size()];
+    }
+    output[size] = '\0';
+    return output;
+}
+
+
 double* doFit(string condition, string MuonID_str, double* init_conditions, bool save = TRUE) // RETURNS ARRAY WITH [yield_all, yield_pass, err_all, err_pass]    ->   OUTPUT ARRAY
 {
     TFile *file0    = TFile::Open("DATA/Upsilon/trackerMuon/T&P_UPSILON_DATA.root");
     TTree *DataTree = (TTree*)file0->Get(("UPSILON_DATA"));
     
-    double _mmin = 9.1;  double _mmax = 10.6;
+    double _mmin = 8.7;  double _mmax = 11;
     
     RooRealVar MuonID(MuonID_str.c_str(), MuonID_str.c_str(), 0, 1); //Muon_Id
     
@@ -29,12 +45,13 @@ double* doFit(string condition, string MuonID_str, double* init_conditions, bool
     RooRealVar ProbeMuon_Eta("ProbeMuon_Eta", "ProbeMuon_Eta", -3, 3);
     RooRealVar ProbeMuon_Phi("ProbeMuon_Phi", "ProbeMuon_Phi", -2, 2);
     
-    RooFormulaVar* redeuce = new RooFormulaVar("PPTM", condition.c_str(), RooArgList(ProbeMuon_Phi));
-    RooDataSet *Data_ALL    = new RooDataSet("DATA", "DATA", DataTree, RooArgSet(InvariantMass, MuonID, ProbeMuon_Phi),*redeuce);
-    RooFormulaVar* cutvar = new RooFormulaVar("PPTM", strcat(condition.c_str(), "&& PassingProbeTrackerMuon == 1"), RooArgList(MuonID, ProbeMuon_Phi));
+    RooFormulaVar* redeuce = new RooFormulaVar("PPTM", condition.c_str(), RooArgList(ProbeMuon_Pt));
+    RooDataSet *Data_ALL    = new RooDataSet("DATA", "DATA", DataTree, RooArgSet(InvariantMass, MuonID, ProbeMuon_Pt),*redeuce);
+    RooFormulaVar* cutvar = new RooFormulaVar("PPTM", strcat(strcat(strcat(condition.c_str(), " && ", "ok"), MuonID_str), " == 1\0"), RooArgList(MuonID, ProbeMuon_Pt));
+
     
     // CUTAVAR NEEDS TO BE CHANGED
-    RooDataSet *Data_PASSING = new RooDataSet("DATA_PASS", "DATA_PASS", DataTree, RooArgSet(InvariantMass, MuonID, ProbeMuon_Phi), *cutvar);//
+    RooDataSet *Data_PASSING = new RooDataSet("DATA_PASS", "DATA_PASS", DataTree, RooArgSet(InvariantMass, MuonID, ProbeMuon_Pt), *cutvar);//
     
     RooDataHist* dh_ALL     = Data_ALL->binnedClone();
     RooDataHist* dh_PASSING = Data_PASSING->binnedClone();
@@ -44,14 +61,14 @@ double* doFit(string condition, string MuonID_str, double* init_conditions, bool
     
     RooPlot *frame = InvariantMass.frame(RooFit::Title("Invariant Mass"));
     // BACKGROUND VARIABLES
-    RooRealVar a0("a0", "a0", 2.5875e-02, -1., 1.);
-    RooRealVar a1("a1", "a1", -7.8407e-02, -1., 1.);
+    RooRealVar a0("a0", "a0", 0, -1, 1);
+    RooRealVar a1("a1", "a1", 0, -1, 1);
 
     // BACKGROUND FUNCTION
     RooChebychev background("background","background", InvariantMass, RooArgList(a0,a1));
     
     // GAUSSIAN VARIABLES
-    RooRealVal sigma("sigma", "sigma",init_conditions[3]);
+    RooRealVar sigma("sigma","sigma",init_conditions[3]);
     RooRealVar mean1("mean1","mean1",init_conditions[0]);
     RooRealVar mean2("mean2","mean2",init_conditions[1]);
     RooRealVar mean3("mean3","mean3",init_conditions[2]);
@@ -63,14 +80,14 @@ double* doFit(string condition, string MuonID_str, double* init_conditions, bool
     RooGaussian gaussian2("signal2","signal2",InvariantMass,mean2,sigma);
     RooGaussian gaussian3("signal3","signal3",InvariantMass,mean3,sigma);
     
-    double n_signal_initial1 =(Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.015",mass_peak1))-Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.030&&abs(InvariantMass-%g)>.015",mass_peak1,mass_peak1))) / Data_ALL->sumEntries();
-    double n_signal_initial2 =(Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.015",mass_peak2))-Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.030&&abs(InvariantMass-%g)>.015",mass_peak2,mass_peak2))) / Data_ALL->sumEntries();
-    double n_signal_initial3 =(Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.015",mass_peak3))-Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.030&&abs(InvariantMass-%g)>.015",mass_peak3,mass_peak3))) / Data_ALL->sumEntries();
+    double n_signal_initial1 =(Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.015",init_conditions[1]))-Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.030&&abs(InvariantMass-%g)>.015",init_conditions[1],init_conditions[1]))) / Data_ALL->sumEntries();
+    double n_signal_initial2 =(Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.015",init_conditions[2]))-Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.030&&abs(InvariantMass-%g)>.015",init_conditions[2],init_conditions[2]))) / Data_ALL->sumEntries();
+    double n_signal_initial3 =(Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.015",init_conditions[3]))-Data_ALL->sumEntries(TString::Format("abs(InvariantMass-%g)<0.030&&abs(InvariantMass-%g)>.015",init_conditions[3],init_conditions[3]))) / Data_ALL->sumEntries();
     
     double n_signal_initial_total = n_signal_initial1 + n_signal_initial2 + n_signal_initial3;
     
-    RooRealVar frac1("frac1","frac1",7.1345e-01,0.6,0.72);
-    RooRealVar frac2("frac2","frac2",1.9309e-01,0.191,0.194);
+    RooRealVar frac1("frac1","frac1",7.1345e-01);
+    RooRealVar frac2("frac2","frac2",1.9309e-01);
 
     RooAddPdf* signal;
     
