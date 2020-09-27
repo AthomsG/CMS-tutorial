@@ -15,8 +15,6 @@ TEfficiency* get_efficiency(TH1F* ALL, TH1F* PASS)
     
     gPad->Update();
 
-    //Set range in y axis
-
     auto graph = pEff->GetPaintedGraph();
     graph->SetMinimum(0.8);
     graph->SetMaximum(1.2);

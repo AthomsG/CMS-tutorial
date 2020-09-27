@@ -15,7 +15,7 @@ char* strcat(string destination, string source)
     return output;
 }
 
-double* doFit(string condition, string MuonID_str, bool save = TRUE) // RETURNS ARRAY WITH [yield_all, yield_pass, err_all, err_pass]    ->   OUTPUT ARRAY
+double* doFit(string condition, string MuonID_str, double* init_conditions, bool save = TRUE) // RETURNS ARRAY WITH [yield_all, yield_pass, err_all, err_pass]    ->   OUTPUT ARRAY
 {
     TFile *file0    = TFile::Open("DATA/Upsilon/trackerMuon/T&P_UPSILON_DATA.root");
     TTree *DataTree = (TTree*)file0->Get(("UPSILON_DATA"));
@@ -39,10 +39,6 @@ double* doFit(string condition, string MuonID_str, bool save = TRUE) // RETURNS 
     RooDataHist* dh_ALL     = Data_ALL->binnedClone();
     RooDataHist* dh_PASSING = Data_PASSING->binnedClone();
     
-    double mass_peak1 = 9.46030;
-    double mass_peak2 = 10.02326;
-    double mass_peak3 = 10.3552;
-    
     TCanvas* c_all  = new TCanvas;
     TCanvas* c_pass = new TCanvas;
     
@@ -55,10 +51,10 @@ double* doFit(string condition, string MuonID_str, bool save = TRUE) // RETURNS 
     RooChebychev background("background","background", InvariantMass, RooArgList(a0,a1));
     
     // GAUSSIAN VARIABLES
-    RooRealVar sigma("sigma","sigma",0.08,0.05,0.11); //0.1
-    RooRealVar mean1("mean1","mean1",mass_peak1,9.4,9.47);
-    RooRealVar mean2("mean2","mean2",mass_peak2, 10, 10.03);
-    RooRealVar mean3("mean3","mean3",mass_peak3, 10.3, 10.4);
+    RooRealVal sigma("sigma", "sigma",init_conditions[3]);
+    RooRealVar mean1("mean1","mean1",init_conditions[0]);
+    RooRealVar mean2("mean2","mean2",init_conditions[1]);
+    RooRealVar mean3("mean3","mean3",init_conditions[2]);
     // CRYSTAL BALL VARIABLES
     RooRealVar alpha("alpha","alpha", 1.4384e+00, 1.43, 1.44);
     RooRealVar n("n", "n", 1.6474e+01, 16., 17.);
@@ -98,9 +94,7 @@ double* doFit(string condition, string MuonID_str, bool save = TRUE) // RETURNS 
     sample.defineType("All") ;
     sample.defineType("PASSING") ;
     
-    //WHEN DOING UNBINNED, CHANGE TO DATASET
     RooDataHist combData("combData","combined data",InvariantMass,Index(sample),Import("ALL",*dh_ALL),Import("PASSING",*dh_PASSING));
-    //RooDataSet combData("combData","combined data",InvariantMass,Index(sample),Import("ALL", *Data_ALL),Import("PASSING", *Data_PASSING));
     
     RooSimultaneous simPdf("simPdf","simultaneous pdf",sample) ;
     
@@ -153,7 +147,6 @@ double* doFit(string condition, string MuonID_str, bool save = TRUE) // RETURNS 
     
     frame_pass->Draw();
     
-    //CHECK IF THERE IS A FIT RESULT DIR. IF NOT, MAKE ONE.
     string file     = "Fit Result/";
     string all_pdf  = "_ALL.pdf";
     string pass_pdf = "_PASS.pdf";
@@ -166,7 +159,6 @@ double* doFit(string condition, string MuonID_str, bool save = TRUE) // RETURNS 
         
     // DELETING ALLOCATED MEMORY
     delete file0;
-    //delete DataTree; - Deleting TTree deletes TFile
     
     delete Data_ALL;
     delete Data_PASSING;
