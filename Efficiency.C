@@ -18,7 +18,7 @@ void Efficiency()
     
     /*-----------------------------------INSERT CODE HERE-----------------------------------*/
     int bin_n = //Insert number of intervals(bins) here
-    double* bin = new double[bin_n];
+    double bins[] = {...};
     
     string* conditions = get_conditions(bin_n, bins); // (1)
     
