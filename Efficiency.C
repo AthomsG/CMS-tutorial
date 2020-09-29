@@ -2,32 +2,34 @@
 #include "src/DoFit.cpp"
 #include "src/get_conditions.cpp"
 #include "src/get_efficiency.cpp"
+#include "src/change_bin.cpp"
 #include "src/make_hist.cpp"
 #include "src/McYield.cpp"
 
 void Efficiency()
 {
-    /*-----------------------------------INSERT CODE HERE-----------------------------------*/
+    /*-----------------------------------I N S E R T    C O D E    H E R E-----------------------------------*/
     //We start by declaring the nature of our dataset. (Is the data real or simulated?)
-    bool DataIsMC = ;
-    //Which quantity do we want to use?
-    string quantity = ;
-    
+    bool DataIsMC   = ...;
+    //Which Muon Id do you want to study?
+    string MuonId   = ...;
+    //Which quantity do you want to use?
+    string quantity = ...; //Pt, Eta or Phi
     /*--------------------------------------------------------------------------------------
      The fitting method requires the segmentation of the quantity being studied
      into intervals of our desired size. (1)
      To achieve that we must create a string array with the intervals of each segment(bin).
     ----------------------------------------------------------------------------------------*/
     
-    /*-----------------------------------INSERT CODE HERE-----------------------------------*/
-    int bin_n = ... ;//Insert number of intervals(bins) here
+    /*-----------------------------------I N S E R T    C O D E    H E R E-----------------------------------*/
+    int bin_n     = ... ;//Insert number of intervals(bins) here
     double bins[] = ... ;
     
-    string* conditions = get_conditions(bin_n, bins, "ProbeMuon_Pt"); // (1)
+    string* conditions = get_conditions(bin_n, bins, "ProbeMuon" + quantity); // (1)
     
     //Now we must choose initial conditions in order to fit our data
     double *init_conditions = new double[4];
-    /*-----------------------------------INSERT CODE HERE-----------------------------------*/
+    /*-----------------------------------I N S E R T    C O D E    H E R E-----------------------------------*/
     init_conditions[0] = /*peak1*/;
     init_conditions[1] = /*peak2*/;
     init_conditions[2] = /*peak3*/;
@@ -40,7 +42,7 @@ void Efficiency()
         if (DataIsMC)
             yields_n_errs[i] = McYield(conditions[i], quantity);
         else
-            yields_n_errs[i] = doFit(conditions[i], "PassingProbeTrackingMuon", quantity, init_conditions);
+            yields_n_errs[i] = doFit(conditions[i], MuonId, quantity, init_conditions);
             //doFit returns: [yield_all, yield_pass, err_all, err_pass]
     }
     
@@ -48,7 +50,7 @@ void Efficiency()
     TH1F *yield_PASS = make_hist("PASS", yields_n_errs, 1, bin_n, bins, DataIsMC);
     
     //----------------------SAVING RESULTS TO Histograms.root--------------------//
-    // useful if we require to change the fit on a specific set of bins
+    //useful if we require to change the fit on a specific set of bins
     TFile* EfficiencyFile = TFile::Open("Histograms.root","RECREATE");
     yield_ALL->SetDirectory(gDirectory);
     yield_PASS->SetDirectory(gDirectory);
@@ -58,8 +60,10 @@ void Efficiency()
     //If all of the fits seem correct we can proceed to generate the efficiency
     get_efficiency(yield_ALL, yield_PASS, quantity, DataIsMC);
     
+    //In case you want to change the fit on a specific, comment the loop and "result saving" code and uncomment the following function
+    //void change_bin(/*condition from string* conditions*/, MuonId, quantity, init_conditions)
+    
     //Once we've calculated the efficiency for both data sets, we can generate
     //a plot that combines both results
-    
-    compare_efficiency(quantity, "Efficiency Result/Pt/Efficiency_Run2011.root", "Efficiency Result/Pt/Efficiency_MC.root");
+    //compare_efficiency(quantity, "Efficiency Result/Pt/Efficiency_Run2011.root", "Efficiency Result/Pt/Efficiency_MC.root");
 }
