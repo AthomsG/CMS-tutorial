@@ -10,11 +10,11 @@ void Efficiency()
 {
     /*-----------------------------------I N S E R T    C O D E    H E R E-----------------------------------*/
     //We start by declaring the nature of our dataset. (Is the data real or simulated?)
-    bool DataIsMC   = ...;
+    bool DataIsMC   = ... ;
     //Which Muon Id do you want to study?
-    string MuonId   = ...;
+    string MuonId   = ... ;
     //Which quantity do you want to use?
-    string quantity = ...; //Pt, Eta or Phi
+    string quantity = ... ; //Pt, Eta or Phi
     /*--------------------------------------------------------------------------------------
      The fitting method requires the segmentation of the quantity being studied
      into intervals of our desired size. (1)
@@ -22,10 +22,10 @@ void Efficiency()
     ----------------------------------------------------------------------------------------*/
     
     /*-----------------------------------I N S E R T    C O D E    H E R E-----------------------------------*/
-    int bin_n     = ... ;//Insert number of intervals(bins) here
-    double bins[] = ... ;
+    double bins[] = {...};
+    int bin_n     = ...;
     
-    string* conditions = get_conditions(bin_n, bins, "ProbeMuon" + quantity); // (1)
+    string* conditions = get_conditions(bin_n, bins, "ProbeMuon_" + quantity); // (1)
     
     //Now we must choose initial conditions in order to fit our data
     double *init_conditions = new double[4];
@@ -59,11 +59,12 @@ void Efficiency()
     
     //If all of the fits seem correct we can proceed to generate the efficiency
     get_efficiency(yield_ALL, yield_PASS, quantity, DataIsMC);
-    
+     
     //In case you want to change the fit on a specific, comment the loop and "result saving" code and uncomment the following function
-    //void change_bin(/*condition from string* conditions*/, MuonId, quantity, init_conditions)
+    //change_bin(/*bin number you want to redo*/, /*condition (you can copy the title from the generated fit .pdf)*/, MuonId, quantity, DataIsMC, init_conditions);
+    //bins start on 1
     
     //Once we've calculated the efficiency for both data sets, we can generate
     //a plot that combines both results
-    //compare_efficiency(quantity, "Efficiency Result/Pt/Efficiency_Run2011.root", "Efficiency Result/Pt/Efficiency_MC.root");
+    //compare_efficiency(quantity, "Efficiency Result/Pt/Efficiency_MC.root", "Efficiency Result/Pt/Efficiency_Run2011.root");
 }
