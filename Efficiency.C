@@ -7,10 +7,11 @@
 
 void Efficiency()
 {
+    /*-----------------------------------INSERT CODE HERE-----------------------------------*/
     //We start by declaring the nature of our dataset. (Is the data real or simulated?)
-    bool DataIsMC = true;
+    bool DataIsMC = ;
     //Which quantity do we want to use?
-    string quantity = "Pt";
+    string quantity = ;
     
     /*--------------------------------------------------------------------------------------
      The fitting method requires the segmentation of the quantity being studied
@@ -19,18 +20,18 @@ void Efficiency()
     ----------------------------------------------------------------------------------------*/
     
     /*-----------------------------------INSERT CODE HERE-----------------------------------*/
-    int bin_n = 23;//Insert number of intervals(bins) here
-    double bins[] = {2, 3.4, 4, 4.2, 4.4, 4.7, 5.0, 5.1, 5.2, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.2, 6.4, 6.6, 6.8, 7.3, 9.5, 13.0, 17.0, 40};
+    int bin_n = ... ;//Insert number of intervals(bins) here
+    double bins[] = ... ;
     
     string* conditions = get_conditions(bin_n, bins, "ProbeMuon_Pt"); // (1)
     
     //Now we must choose initial conditions in order to fit our data
     double *init_conditions = new double[4];
     /*-----------------------------------INSERT CODE HERE-----------------------------------*/
-    init_conditions[0] = 9.46030;
-    init_conditions[1] = 10.02326;
-    init_conditions[2] = 10.3552;
-    init_conditions[3] = 0.08;
+    init_conditions[0] = /*peak1*/;
+    init_conditions[1] = /*peak2*/;
+    init_conditions[2] = /*peak3*/;
+    init_conditions[3] = /*sigma*/;
     
     double ** yields_n_errs = new double*[bin_n];
     
@@ -46,7 +47,7 @@ void Efficiency()
     TH1F *yield_ALL  = make_hist("ALL" , yields_n_errs, 0, bin_n, bins, DataIsMC);
     TH1F *yield_PASS = make_hist("PASS", yields_n_errs, 1, bin_n, bins, DataIsMC);
     
-    //----------------------SAVING RESULTS TO .root--------------------//
+    //----------------------SAVING RESULTS TO Histograms.root--------------------//
     // useful if we require to change the fit on a specific set of bins
     TFile* EfficiencyFile = TFile::Open("Histograms.root","RECREATE");
     yield_ALL->SetDirectory(gDirectory);
