@@ -8,7 +8,9 @@
 void Efficiency()
 {
     //We start by declaring the nature of our dataset. (Is the data real or simulated?)
-    bool DataIsMC = FALSE;
+    bool DataIsMC = true;
+    //Which quantity do we want to use?
+    string quantity = "Pt";
     
     /*--------------------------------------------------------------------------------------
      The fitting method requires the segmentation of the quantity being studied
@@ -17,8 +19,8 @@ void Efficiency()
     ----------------------------------------------------------------------------------------*/
     
     /*-----------------------------------INSERT CODE HERE-----------------------------------*/
-    int bin_n = 27;//Insert number of intervals(bins) here
-    double bins[] = {2, 3.5, 3.7, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.2, 6.4, 6.6, 6.8, 7.3, 9.0, 13.0, 17.0, 50.0};
+    int bin_n = 23;//Insert number of intervals(bins) here
+    double bins[] = {2, 3.4, 4, 4.2, 4.4, 4.7, 5.0, 5.1, 5.2, 5.4, 5.5, 5.6, 5.7, 5.8, 5.9, 6.2, 6.4, 6.6, 6.8, 7.3, 9.5, 13.0, 17.0, 40};
     
     string* conditions = get_conditions(bin_n, bins, "ProbeMuon_Pt"); // (1)
     
@@ -35,15 +37,15 @@ void Efficiency()
     for (int i = 0; i < bin_n; i++)
     {
         if (DataIsMC)
-            yields_n_errs[i] = McYield(conditions[i]);
+            yields_n_errs[i] = McYield(conditions[i], quantity);
         else
-            yields_n_errs[i] = doFit(conditions[i], "PassingProbeTrackingMuon", init_conditions, true);
+            yields_n_errs[i] = doFit(conditions[i], "PassingProbeTrackingMuon", quantity, init_conditions);
             //doFit returns: [yield_all, yield_pass, err_all, err_pass]
     }
     
     TH1F *yield_ALL  = make_hist("ALL" , yields_n_errs, 0, bin_n, bins, DataIsMC);
     TH1F *yield_PASS = make_hist("PASS", yields_n_errs, 1, bin_n, bins, DataIsMC);
-   
+    
     //----------------------SAVING RESULTS TO .root--------------------//
     // useful if we require to change the fit on a specific set of bins
     TFile* EfficiencyFile = TFile::Open("Histograms.root","RECREATE");
@@ -53,11 +55,10 @@ void Efficiency()
     //-----------------------------------------------------------------//
     
     //If all of the fits seem correct we can proceed to generate the efficiency
-    get_efficiency(yield_ALL, yield_PASS);
+    get_efficiency(yield_ALL, yield_PASS, quantity, DataIsMC);
     
     //Once we've calculated the efficiency for both data sets, we can generate
     //a plot that combines both results
     
-    //string quantity = "";
-    //compare_efficiency(quantity);
+    compare_efficiency(quantity, "Efficiency Result/Pt/Efficiency_Run2011.root", "Efficiency Result/Pt/Efficiency_MC.root");
 }

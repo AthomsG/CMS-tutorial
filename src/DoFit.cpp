@@ -1,57 +1,36 @@
 using namespace RooFit;
 
-char* strcat(string destination, string source)
-{
-    int size = destination.size() + source.size();
-    char* output = new char[size + 1];
-    for (int i = 0; i < size; i++)
-    {
-        if (i < destination.size())
-            output[i] = destination[i];
-        else
-            output[i] = source[i - destination.size()];
-    }
-    output[size] = '\0';
-    return output;
-}
-
-string strcat(string destination, string source, string ok)
-{
-    int size = destination.size() + source.size();
-    char* output = new char[size + 1];
-    for (int i = 0; i < size; i++)
-    {
-        if (i < destination.size())
-            output[i] = destination[i];
-        else
-            output[i] = source[i - destination.size()];
-    }
-    output[size] = '\0';
-    return output;
-}
-
-
-double* doFit(string condition, string MuonID_str, double* init_conditions, bool save = TRUE) // RETURNS ARRAY WITH [yield_all, yield_pass, err_all, err_pass]    ->   OUTPUT ARRAY
+double* doFit(string condition, string MuonID_str, string quant, double* init_conditions, bool save = TRUE) // RETURNS ARRAY WITH [yield_all, yield_pass, err_all, err_pass]    ->   OUTPUT ARRAY
 {
     TFile *file0    = TFile::Open("DATA/Upsilon/trackerMuon/T&P_UPSILON_DATA.root");
     TTree *DataTree = (TTree*)file0->Get(("UPSILON_DATA"));
     
-    double _mmin = 8.7;  double _mmax = 11;
+    double _mmin = 9;  double _mmax = 10.8;
     
     RooRealVar MuonID(MuonID_str.c_str(), MuonID_str.c_str(), 0, 1); //Muon_Id
     
     RooRealVar InvariantMass("InvariantMass", "InvariantMass", _mmin, _mmax);
-    RooRealVar ProbeMuon_Pt("ProbeMuon_Pt", "ProbeMuon_Pt", 0, 60);
-    RooRealVar ProbeMuon_Eta("ProbeMuon_Eta", "ProbeMuon_Eta", -3, 3);
-    RooRealVar ProbeMuon_Phi("ProbeMuon_Phi", "ProbeMuon_Phi", -2, 2);
     
-    RooFormulaVar* redeuce = new RooFormulaVar("PPTM", condition.c_str(), RooArgList(ProbeMuon_Pt));
-    RooDataSet *Data_ALL    = new RooDataSet("DATA", "DATA", DataTree, RooArgSet(InvariantMass, MuonID, ProbeMuon_Pt),*redeuce);
-    RooFormulaVar* cutvar = new RooFormulaVar("PPTM", strcat(strcat(strcat(condition.c_str(), " && ", "ok"), MuonID_str), " == 1\0"), RooArgList(MuonID, ProbeMuon_Pt));
+    double* limits = new double[2];
+    if (quant == "Pt") {
+        limits[0] = 0;
+        limits[1] = 40;
+    }
+    if (quant == "Eta") {
+        limits[0] = -3;
+        limits[1] = 3;
+    }
+    if (quant == "Phi") {
+        limits[0] = -2;
+        limits[1] = 2;
+    }
+    RooRealVar quantity(("ProbeMuon_" + quant).c_str(), ("ProbeMuon_" + quant).c_str(), limits[0], limits[1]);
+    
+    RooFormulaVar* redeuce = new RooFormulaVar("PPTM", condition.c_str(), RooArgList(quantity));
+    RooDataSet *Data_ALL    = new RooDataSet("DATA", "DATA", DataTree, RooArgSet(InvariantMass, MuonID, quantity),*redeuce);
+    RooFormulaVar* cutvar = new RooFormulaVar("PPTM", (condition + " && " + MuonID_str + " == 1").c_str() , RooArgList(MuonID, quantity));
 
-    
-    // CUTAVAR NEEDS TO BE CHANGED
-    RooDataSet *Data_PASSING = new RooDataSet("DATA_PASS", "DATA_PASS", DataTree, RooArgSet(InvariantMass, MuonID, ProbeMuon_Pt), *cutvar);//
+    RooDataSet *Data_PASSING = new RooDataSet("DATA_PASS", "DATA_PASS", DataTree, RooArgSet(InvariantMass, MuonID, quantity), *cutvar);//
     
     RooDataHist* dh_ALL     = Data_ALL->binnedClone();
     RooDataHist* dh_PASSING = Data_PASSING->binnedClone();
@@ -61,8 +40,8 @@ double* doFit(string condition, string MuonID_str, double* init_conditions, bool
     
     RooPlot *frame = InvariantMass.frame(RooFit::Title("Invariant Mass"));
     // BACKGROUND VARIABLES
-    RooRealVar a0("a0", "a0", 0, -1, 1);
-    RooRealVar a1("a1", "a1", 0, -1, 1);
+    RooRealVar a0("a0", "a0", 0, -10, 10);
+    RooRealVar a1("a1", "a1", 0, -10, 10);
 
     // BACKGROUND FUNCTION
     RooChebychev background("background","background", InvariantMass, RooArgList(a0,a1));
@@ -73,8 +52,8 @@ double* doFit(string condition, string MuonID_str, double* init_conditions, bool
     RooRealVar mean2("mean2","mean2",init_conditions[1]);
     RooRealVar mean3("mean3","mean3",init_conditions[2]);
     // CRYSTAL BALL VARIABLES
-    RooRealVar alpha("alpha","alpha", 1.4384e+00, 1.43, 1.44);
-    RooRealVar n("n", "n", 1.6474e+01, 16., 17.);
+    RooRealVar alpha("alpha","alpha", 1.4384e+00);
+    RooRealVar n("n", "n", 1.6474e+01);
     // FIT FUNCTIONS
     RooCBShape  gaussian1("signal1","signal1",InvariantMass,mean1,sigma, alpha, n);
     RooGaussian gaussian2("signal2","signal2",InvariantMass,mean2,sigma);
@@ -105,8 +84,7 @@ double* doFit(string condition, string MuonID_str, double* init_conditions, bool
     model      = new RooAddPdf("model","model", RooArgList(*signal, background),RooArgList(n_signal_total, n_back));
     model_pass = new RooAddPdf("model_pass", "model_pass", RooArgList(*signal, background),RooArgList(n_signal_total_pass, n_back_pass));
     
-    // S I M U L T A N E O U S    F I T
-    // ---------------------------------------------------------------------------
+    // SIMULTANEOUS FIT
     RooCategory sample("sample","sample") ;
     sample.defineType("All") ;
     sample.defineType("PASSING") ;
@@ -133,12 +111,10 @@ double* doFit(string condition, string MuonID_str, double* init_conditions, bool
     output[2] = yield_ALL->getError();
     output[3] = yield_PASS->getError();
     
-    //
     frame->SetTitle("ALL");
     frame->SetXTitle("#mu^{+}#mu^{-} invariant mass [GeV/c^{2}]");
     Data_ALL->plotOn(frame);
     
-    //model->paramOn(frame,Layout(0.60,0.90,0.75));
     model->plotOn(frame);
     model->plotOn(frame,RooFit::Components("signal1"),RooFit::LineStyle(kDashed),RooFit::LineColor(kGreen));
     model->plotOn(frame,RooFit::Components("signal2"),RooFit::LineStyle(kDashed),RooFit::LineColor(kMagenta - 5));
@@ -163,20 +139,18 @@ double* doFit(string condition, string MuonID_str, double* init_conditions, bool
     model_pass->plotOn(frame_pass,RooFit::Components("background"),RooFit::LineStyle(kDashed),RooFit::LineColor(kRed));
     
     frame_pass->Draw();
-    
-    string file     = "Fit Result/";
-    string all_pdf  = "_ALL.pdf";
-    string pass_pdf = "_PASS.pdf";
-    
+
     if(save)
     {
-        c_pass->SaveAs(strcat(strcat(file,condition), all_pdf));
-        c_all->SaveAs(strcat(strcat(file, condition),pass_pdf));
+        c_pass->SaveAs(("Fit Result/" + condition + "_ALL.pdf").c_str());
+        c_all->SaveAs (("Fit Result/" + condition + "_PASS.pdf").c_str());
     }
         
     // DELETING ALLOCATED MEMORY
+    delete[] limits;
+    //
     delete file0;
-    
+    //
     delete Data_ALL;
     delete Data_PASSING;
     //

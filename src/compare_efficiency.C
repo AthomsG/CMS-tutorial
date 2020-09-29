@@ -7,6 +7,7 @@
 */
 
 //This code has been adjusted for this tutorial
+
 void compare_plot(TFile *file0, TFile *file1, const char* path, string quantity)
 {
     TEfficiency* pEff0 = (TEfficiency*)file0->Get(path);
@@ -52,12 +53,18 @@ void compare_plot(TFile *file0, TFile *file1, const char* path, string quantity)
     pEff0->Draw();
     gPad->Update();
     
-    if (quantity.compare("pT"))
+    if (quantity == "Pt")
+    {
         pEff0->SetTitle("Efficiency of Tracker Probe Muon;_{p}T (GeV/c);Efficiency");
-    if (quantity.compare("eta"))
+    }
+    if (quantity == "Eta")
+    {
         pEff0->SetTitle("Efficiency of Tracker Probe Muon;#eta;Efficiency");
-    if (quantity.compare("phi"))
+    }
+    if (quantity == "Phi")
+    {
         pEff0->SetTitle("Efficiency of Tracker Probe Muon;#phi;Efficiency");
+    }
 
     pEff1->SetMarkerColor(colorScheme[useScheme][1]);
     pEff1->SetLineColor(colorScheme[useScheme][1]);
@@ -70,21 +77,21 @@ void compare_plot(TFile *file0, TFile *file1, const char* path, string quantity)
     graph->SetMaximum(1.2);
     gPad->Update();
 
-     if (quantity == "pT")
+     if (quantity == "Pt")
      {
         pEff0->GetPaintedGraph()->GetHistogram()->GetXaxis()->SetRangeUser(0.,80.);
         graph->SetMinimum(0.5);
         graph->SetMaximum(1.2);
      }
     
-    if (quantity == "eta")
+    if (quantity == "Eta")
     {
         pEff0->GetPaintedGraph()->GetHistogram()->GetXaxis()->SetRangeUser(-3.,3.);
         graph->SetMinimum(0.8);
         graph->SetMaximum(1.08);
     }
     
-    if (quantity == "phi")
+    if (quantity == "Phi")
     {
         pEff0->GetPaintedGraph()->GetHistogram()->GetXaxis()->SetRangeUser(-3.,3.);
         graph->SetMinimum(0.8);
@@ -107,7 +114,7 @@ void compare_plot(TFile *file0, TFile *file1, const char* path, string quantity)
     txCOD->DrawLatex(0.14,0.85,Form("#bf{CMS Open Data}"));
 
     //Results stored in...
-    const char* directoryToSave = "../Comparison Jsi Run vs MC/";
+    const char* directoryToSave = "Comparison Run2011 vs MC/";
 
     //Check if dir exists
     if (gSystem->AccessPathName(directoryToSave))
@@ -134,7 +141,7 @@ void compare_plot(TFile *file0, TFile *file1, const char* path, string quantity)
 }
 
 //Compare efficiency
-void compare_efficiency(string quantity, string run2011="Result/Efficiencies/Upsilon/Tracker/Pt/Efficiency_MC.root", string MC="Result/Efficiencies/Upsilon/Tracker/Pt/Efficiency_Run2011.root")
+void compare_efficiency(string quantity, string run2011, string MC)
 {
     TFile *file1 = TFile::Open(run2011.c_str());
     TFile *file0 = TFile::Open(MC.c_str());
