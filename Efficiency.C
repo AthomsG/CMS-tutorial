@@ -63,5 +63,5 @@ void Efficiency()
     
     //Once we've calculated the efficiency for both data sets, we can generate
     //a plot that combines both results
-    //compare_efficiency(quantity, "Efficiency Result/Pt/Efficiency_MC.root", "Efficiency Result/Pt/Efficiency_Run2011.root");
+    compare_efficiency(quantity, "Efficiency Result/" + quantity + "/Efficiency_MC.root", "Efficiency Result/" + quantity + "/Efficiency_Run2011.root");
 }
