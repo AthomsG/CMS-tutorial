@@ -8,24 +8,18 @@
 
 void Efficiency()
 {
-    /*-----------------------------------I N S E R T    C O D E    H E R E-----------------------------------*/
     //We start by declaring the nature of our dataset. (Is the data real or simulated?)
-    bool DataIsMC   = ... ;
+    bool DataIsMC   = false;
     //Which Muon Id do you want to study?
-    string MuonId   = ... ;
+    string MuonId   = "PassingProbeTrackingMuon";
     //Which quantity do you want to use?
-    string quantity = ... ; //Pt, Eta or Phi
-    /*--------------------------------------------------------------------------------------
-     The fitting method requires the segmentation of the quantity being studied
-     into intervals of our desired size. (1)
-     To achieve that we must create a string array with the intervals of each segment(bin).
-    ----------------------------------------------------------------------------------------*/
+    string quantity = "Pt"; //Pt, Eta or Phi
     
     /*-----------------------------------I N S E R T    C O D E    H E R E-----------------------------------*/
-    double bins[] = {...};
-    int bin_n     = ...;
+    double bins[] =  ...;
+    int bin_n     =  ...;
+     /*------------------------------------------------------------------------------------------------------*/
     
-    string* conditions = get_conditions(bin_n, bins, "ProbeMuon_" + quantity); // (1)
     
     //Now we must choose initial conditions in order to fit our data
     double *init_conditions = new double[4];
@@ -34,7 +28,10 @@ void Efficiency()
     init_conditions[1] = /*peak2*/;
     init_conditions[2] = /*peak3*/;
     init_conditions[3] = /*sigma*/;
+    /*------------------------------------------------------------------------------------------------------*/
     
+    
+    string* conditions = get_conditions(bin_n, bins, "ProbeMuon_" + quantity);
     double ** yields_n_errs = new double*[bin_n];
     
     for (int i = 0; i < bin_n; i++)
